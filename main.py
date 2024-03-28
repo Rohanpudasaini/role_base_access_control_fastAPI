@@ -13,7 +13,7 @@ def home():
 
 
 @app.post('/login/')
-def login(username: Annotated[str, Form()],password: Annotated[str, Form()]):
+def login(username: str = Form() ,password: str= Form()):
     user = session.execute(Select(RoleBasedUser).where(RoleBasedUser.username==username)).one_or_none()
     if user:
         access_token,refresh_token = auth.generate_JWT(username, user[0].role)
@@ -45,8 +45,8 @@ def login(username: Annotated[str, Form()],password: Annotated[str, Form()]):
                 }
             )
     
-def token_in_header(authorization:str = Header()):
-    token_splitted = authorization.split(" ",1)
+def token_in_header(Authorization:str = Header()):
+    token_splitted = Authorization.split(" ",1)
     if token_splitted[0].lower() =='bearer':
         return auth.decodAccessJWT(token_splitted[1])
                
