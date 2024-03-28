@@ -3,9 +3,18 @@ from fastapi import Depends, FastAPI, Form, HTTPException, Header
 from auth import auth
 from models import RoleBasedUser
 from sqlalchemy import Select
+from sqlalchemy.exc import IntegrityError
 from database_connection import session
+from pydantic import BaseModel, EmailStr
 
 app = FastAPI(title="RBAC")
+
+class UserAddModel(BaseModel):
+    username:str
+    password:str
+    email:EmailStr|None=None
+
+
 
 @app.get('/')
 def home():
@@ -69,7 +78,24 @@ def is_allowed(payload =Depends(token_in_header)):
     )
 
 
-
 @app.get('/test')
 def test(return_value=Depends(is_allowed)):
     return return_value
+
+@app.post('/user', status_code=201)
+def add_user(useraddmodel:UserAddModel):
+    useraddmodel.password = auth.hash_password(useraddmodel.password)
+    user_to_add = RoleBasedUser(**useraddmodel.__dict__)
+    session.add(user_to_add)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail={
+                'error': "Bad Request",
+                'message':'User with same username already exsist'
+            }
+        )
+    return "User Added sucesfully"

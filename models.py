@@ -12,4 +12,3 @@ class RoleBasedUser(Base):
     role:Mapped[str] = mapped_column(default="user")
     
 # Base.metadata.create_all(bind=engine)
-    
