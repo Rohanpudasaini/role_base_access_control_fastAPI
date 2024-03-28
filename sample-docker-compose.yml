@@ -1,0 +1,35 @@
+services:
+  python:
+    image: fastapitest
+    ports:
+      - "8000:8000"
+    environment:
+      - password=databasepassword
+      - host=postgres # Same name as the service of database, postgres in this case
+      - database=databasename
+      - user=databaseuser
+      - salt=U9@F!ku!@ # Not used in this code, can be removed.
+      - secret_access=supersecretsecret
+      - secret_refresh=supersecretsecret
+      - algorithm=HS256
+      - access_expire_time=20 # These are also not used and currently is hard coded in the auth file.
+      - refresh_expire_time=7 # These are also not used and currently is hard coded in the auth file.
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - postgres
+    volumes:
+      - ./:/app
+
+  postgres:
+    image: postgres
+    ports:
+      - "1234:5432" #Can use 5432:5432, but as I already have another postgres running I have changed it.
+    environment:
+      - POSTGRES_PASSWORD=databasepassword
+      - POSTGRES_DB=databasename
+    volumes:
+      - fastapi-postgres:/var/lib/postgresql/data
+
+volumes:
+  fastapi-postgres:
+    driver: local
