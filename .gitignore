@@ -5,6 +5,7 @@ __pycache__/
 *.ini
 # C extensions
 *.so
+tzsk
 
 # Distribution / packaging
 .Python
